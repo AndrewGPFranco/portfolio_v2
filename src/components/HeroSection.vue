@@ -19,14 +19,15 @@ const { go } = useNav()
         <CvButton variant="ghost" />
       </div>
     </div>
-    <img
-      v-if="contact.photo"
-      class="hero-photo"
-      :src="contact.photo"
-      :alt="t('Foto do Andrew', 'Photo of Andrew')"
-      width="240"
-      height="300"
-      fetchpriority="high"
-    />
+    <picture v-if="contact.photo" class="hero-photo">
+      <source media="(max-width: 719px)" :srcset="contact.photoSquare" width="112" height="112" />
+      <img
+        :src="contact.photo"
+        :alt="t('Foto do Andrew', 'Photo of Andrew')"
+        width="240"
+        height="300"
+        fetchpriority="high"
+      />
+    </picture>
   </div>
 </template>

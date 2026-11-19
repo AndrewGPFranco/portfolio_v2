@@ -41,13 +41,14 @@ h1 { font-size: clamp(40px, 10vw, 76px); line-height: .95; letter-spacing: -0.04
 .lede { font-size: 18px; line-height: 1.5; color: var(--muted); max-width: 46ch; margin: 18px 0 0; }
 
 .block { padding-top: 72px; scroll-margin-top: 56px; }
-.block > h2 { font-size: clamp(30px, 7vw, 44px); letter-spacing: -0.035em; font-weight: 800; margin: 0; }
-.block > .sub { font-size: 17px; line-height: 1.5; color: var(--muted); max-width: 48ch; margin: 10px 0 0; }
+.block-head > h2 { font-size: clamp(30px, 7vw, 44px); letter-spacing: -0.035em; font-weight: 800; margin: 0; }
+.block-head > .sub { font-size: 17px; line-height: 1.5; color: var(--muted); max-width: 48ch; margin: 10px 0 0; }
 
 
 /* Hero com foto: no celular a foto vem em cima; no desktop, à direita. */
 .hero { display: flex; flex-direction: column; }
-.hero-photo { order: -1; width: 112px; height: 112px; margin: 0 0 22px; border-radius: 30px; object-fit: cover; object-position: 50% 30%; background: var(--surface); box-shadow: var(--shadow); }
+.hero-photo { order: -1; display: block; width: 112px; height: 112px; margin: 0 0 22px; border-radius: 30px; overflow: hidden; background: var(--surface); box-shadow: var(--shadow); }
+.hero-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
 @media (min-width: 720px) {
   .hero { display: grid; grid-template-columns: 1fr 240px; align-items: center; gap: 48px; }
   .hero-photo { order: 0; width: 240px; height: 300px; margin: 0; border-radius: 28px; box-shadow: 0 0 0 6px var(--surface), var(--shadow); }
@@ -270,8 +271,55 @@ a.c-item:hover { border-color: var(--cobalt); }
   .layer { display: grid; grid-template-columns: 220px 1fr; gap: 24px; padding-bottom: 40px; }
   .layer p { margin-bottom: 0; }
 }
+/* ---------- Desktop (≥1024px). Nada aqui afeta o mobile. ---------- */
+@media (min-width: 1024px) {
+  .nav-in, .page, .foot-in { max-width: 1200px; }
+  .nav-in { padding-left: 32px; padding-right: 32px; }
+  .foot-in { padding-left: 32px; padding-right: 32px; }
+  .page { padding: 72px 32px 0; counter-reset: sec; }
+
+  /* Hero: foto maior com um bloco de cor atrás e um brilho suave */
+  .hero { position: relative; isolation: isolate; grid-template-columns: minmax(0, 1fr) 340px; gap: 88px; min-height: min(540px, calc(100vh - 220px)); }
+  .hero::after { content: ''; position: absolute; z-index: -1; right: -160px; top: 50%; width: 680px; height: 680px; transform: translateY(-50%); background: radial-gradient(closest-side, var(--cobalt-soft), transparent); pointer-events: none; }
+  .hero::before { content: ''; position: absolute; z-index: 0; right: 0; top: 50%; width: 340px; height: 425px; transform: translate(22px, calc(-50% + 22px)) rotate(4deg); border-radius: 34px; background: var(--cobalt); opacity: .9; }
+  .hero-photo { position: relative; z-index: 1; width: 340px; height: 425px; border-radius: 32px; box-shadow: 0 0 0 8px var(--surface), 0 30px 60px -24px rgba(12, 17, 28, .45); }
+  .who { display: inline-flex; align-items: center; gap: 12px; font-size: 16px; margin-bottom: 18px; }
+  .who::before { content: ''; width: 32px; height: 2px; border-radius: 2px; background: var(--cobalt); }
+  h1 { font-size: 92px; max-width: 11ch; }
+  .lede { font-size: 20px; margin-top: 24px; }
+  .actions { margin-top: 36px; gap: 12px; }
+
+  /* Seções em duas colunas: título fixo à esquerda, conteúdo à direita */
+  .block { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 0 64px; align-items: start; padding-top: 136px; scroll-margin-top: 72px; }
+  .block-head { position: sticky; top: 104px; }
+  .block-head::before { counter-increment: sec; content: counter(sec, decimal-leading-zero); display: block; margin-bottom: 14px; font-size: 13px; font-weight: 700; letter-spacing: .14em; color: var(--cobalt); font-variant-numeric: tabular-nums; }
+  .block-head > h2 { font-size: 46px; line-height: 1.05; }
+  .block-head > .sub { font-size: 16px; max-width: 28ch; margin-top: 14px; }
+  .block-body > :first-child { margin-top: 0; }
+
+  .about-text p { font-size: 19px; }
+  .stairs { height: 240px; }
+  .layer { grid-template-columns: 236px 1fr; gap: 28px; }
+  .projects { gap: 20px; }
+  .cover { height: 160px; }
+  .foot { margin-top: 136px; }
+}
+
+@media (min-width: 1024px) and (hover: hover) {
+  .project { transition: transform .25s ease, box-shadow .25s ease; }
+  .project:hover { transform: translateY(-4px); box-shadow: 0 2px 4px rgba(12, 17, 28, .06), 0 22px 44px -16px rgba(12, 17, 28, .28); }
+  .tech { transition: border-color .15s, transform .2s ease, box-shadow .2s ease; }
+  .tech:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(12, 17, 28, .06), 0 12px 24px -10px rgba(12, 17, 28, .25); }
+  .btn { transition: transform .15s ease, box-shadow .15s ease, filter .15s; }
+  .btn:not(:disabled):hover { transform: translateY(-1px); }
+  .btn.primary:not(:disabled):hover { box-shadow: 0 10px 24px -10px rgba(12, 17, 28, .5); }
+  a.c-item { transition: border-color .15s, transform .2s ease; }
+  a.c-item:hover { transform: translateX(4px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pulse { display: none; }
   .node { animation: none; border-color: var(--cobalt); background: var(--cobalt-soft); }
   .up-enter-active, .up-leave-active, .fade-enter-active, .fade-leave-active, .reveal { transition: none; }
+  .project:hover, .tech:hover, .btn:hover, a.c-item:hover { transform: none; }
 }

@@ -49,7 +49,8 @@ export const contact = {
   linkedin: 'https://www.linkedin.com/in/andrewgpsilva/',
   github: 'https://github.com/AndrewGPFranco',
   cv: '', // link do PDF; vazio = botões de currículo bloqueados
-  photo: import.meta.env.BASE_URL + 'perfil-rosto.jpg', // recorte de public/perfil2.0.jpeg
+  photo: import.meta.env.BASE_URL + 'perfil-rosto.jpg', // recorte 4:5 (desktop)
+  photoSquare: import.meta.env.BASE_URL + 'perfil-rosto-quadrado.jpg', // recorte quadrado (celular)
 };
 
 export const sections: Section[] = [

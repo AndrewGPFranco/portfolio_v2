@@ -26,24 +26,28 @@ onBeforeUnmount(() => io?.disconnect())
 
 <template>
 <section id="stack" class="block">
-  <h2>Stack</h2>
-  <p class="sub">{{ t('Separei por camada, do front até a infra. Clica em uma tecnologia pra ver mais.', 'Split by layer, from front end to infra. Tap one to see more.') }}</p>
-  <div class="legend">
-    <span><i class="sw"></i>{{ t('Uso no dia a dia', 'Daily use') }}</span>
-    <span><i class="sw dash"></i>{{ t('Estudando', 'Studying') }}</span>
-  </div>
-  <div class="stack" :class="{ live: stackLive }" ref="stackEl">
-    <span class="pulse" aria-hidden="true"></span>
-    <section class="layer" v-for="(layer, i) in layers" :key="layer.id">
-      <span class="node" :style="{ '--d': (0.5 + i * 0.36) + 's' }" aria-hidden="true"></span>
-      <div><h3>{{ L(layer.name) }}</h3><p>{{ L(layer.desc) }}</p></div>
-      <div class="techs">
-        <button v-for="tc in techsOf(layer.id)" :key="tc.id" class="tech" :class="{ deep: tc.deepening }" @click="open(tc)">
-          <span class="tile"><img :src="icons[tc.id]" alt=""></span>
-          <span>{{ tc.name }}<small v-if="tc.deepening">{{ t('Estudando', 'Studying') }}</small></span>
-        </button>
-      </div>
-    </section>
+  <header class="block-head">
+    <h2>Stack</h2>
+    <p class="sub">{{ t('Separei por camada, do front até a infra. Clica em uma tecnologia pra ver mais.', 'Split by layer, from front end to infra. Tap one to see more.') }}</p>
+  </header>
+  <div class="block-body">
+    <div class="legend">
+      <span><i class="sw"></i>{{ t('Uso no dia a dia', 'Daily use') }}</span>
+      <span><i class="sw dash"></i>{{ t('Estudando', 'Studying') }}</span>
+    </div>
+    <div class="stack" :class="{ live: stackLive }" ref="stackEl">
+      <span class="pulse" aria-hidden="true"></span>
+      <section class="layer" v-for="(layer, i) in layers" :key="layer.id">
+        <span class="node" :style="{ '--d': (0.5 + i * 0.36) + 's' }" aria-hidden="true"></span>
+        <div><h3>{{ L(layer.name) }}</h3><p>{{ L(layer.desc) }}</p></div>
+        <div class="techs">
+          <button v-for="tc in techsOf(layer.id)" :key="tc.id" class="tech" :class="{ deep: tc.deepening }" @click="open(tc)">
+            <span class="tile"><img :src="icons[tc.id]" alt=""></span>
+            <span>{{ tc.name }}<small v-if="tc.deepening">{{ t('Estudando', 'Studying') }}</small></span>
+          </button>
+        </div>
+      </section>
+    </div>
   </div>
 </section>
 </template>

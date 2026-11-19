@@ -39,8 +39,32 @@ export interface Project {
   status?: Localized
   desc: Localized
   stack: string[]
-  /** Prints reais do projeto (arquivos em public/). Sem prints, a prévia mostra "em desenvolvimento". */
+  /** Por que o projeto existe, em uma ou duas frases. */
+  context: Localized
+  /** Números/fatos curtos que aparecem como chips no topo da prévia. */
+  facts: Localized[]
+  /** Fluxos da arquitetura, desenhados como diagrama na prévia. */
+  flows: Flow[]
+  /** Recursos que mais valem destacar. */
+  highlights: Highlight[]
+  /** Prints reais do projeto (arquivos em public/). Opcional. */
   screens?: { src: string; title: Localized }[]
+  /** Clipe curto (5–8 s, sem som, em loop) mostrando uma interação. Opcional. */
+  clip?: { src: string; poster?: string; title: Localized }
+}
+export interface FlowNode {
+  name: Localized | string
+  note?: Localized
+  /** Destaca o nó principal do fluxo. */
+  key?: boolean
+}
+export interface Flow {
+  title: Localized
+  nodes: FlowNode[]
+}
+export interface Highlight {
+  title: Localized
+  text: Localized
 }
 
 // Seus links
@@ -120,16 +144,117 @@ export const roles: Role[] = [
 
 export const projects: Project[] = [
   { id: 'manga', cover: 'manga', url: 'leitor.app/biblioteca', name: { pt: 'Leitor de mangás', en: 'Manga reader' },
-    desc: { pt: 'Um app pra ler mangá, capítulo por capítulo.', en: 'An app to read manga, chapter by chapter.' },
-    stack: ['java', 'spring', 'vue', 'ts', 'tailwind', 'postgres', 'rabbit', 'flyway', 'docker'] },
+    desc: { pt: 'Um app pra ler mangá e ver anime, com upload de capítulo, histórico de leitura e notificação em tempo real.', en: 'An app to read manga and watch anime, with chapter uploads, reading history and real-time notifications.' },
+    stack: ['java', 'spring', 'vue', 'ts', 'tailwind', 'postgres', 'rabbit', 'flyway', 'docker'],
+    context: {
+      pt: 'Comecei em 2024 porque queria um leitor de mangá do meu jeito, só com os que eu curto. Acabou virando o projeto onde eu mais testo coisa nova: hoje tem mangá, anime, histórico de leitura e notificação em tempo real.',
+      en: 'I started it in 2024 because I wanted a manga reader my way, with only the series I like. It became the project where I try out new things the most: today it has manga, anime, reading history and real-time notifications.',
+    },
+    facts: [
+      { pt: 'Desde jun/2024', en: 'Since Jun 2024' },
+      { pt: '+670 commits', en: '670+ commits' },
+      { pt: 'Ports & adapters', en: 'Ports & adapters' },
+      { pt: 'Testes de integração', en: 'Integration tests' },
+    ],
+    flows: [
+      { title: { pt: 'Upload de capítulo', en: 'Chapter upload' }, nodes: [
+        { name: { pt: 'PDF ou ZIP', en: 'PDF or ZIP' }, note: { pt: 'até 500 MB', en: 'up to 500 MB' } },
+        { name: { pt: 'Job de capítulo', en: 'Chapter job' }, note: { pt: 'PDFBox → WebP', en: 'PDFBox → WebP' }, key: true },
+        { name: 'PostgreSQL', note: { pt: 'páginas em lote', en: 'pages in batches' } },
+      ] },
+      { title: { pt: 'Capítulo novo', en: 'New chapter' }, nodes: [
+        { name: { pt: 'Job concluído', en: 'Job done' } },
+        { name: 'RabbitMQ', note: { pt: 'exchange + fila', en: 'exchange + queue' }, key: true },
+        { name: 'SSE', note: { pt: 'push pro navegador', en: 'push to the browser' } },
+        { name: { pt: 'Leitor (Vue)', en: 'Reader (Vue)' }, note: { pt: 'notificação na hora', en: 'instant notification' } },
+      ] },
+    ],
+    highlights: [
+      { title: { pt: 'Upload de capítulo em PDF ou ZIP', en: 'Chapter upload as PDF or ZIP' },
+        text: { pt: 'Um job pega o arquivo, renderiza cada página do PDF com PDFBox a 300 DPI (ou extrai as imagens do ZIP), converte pra WebP e salva em lotes de 100. Roda numa transação só, então se der erro no meio nada fica pela metade. O progresso aparece ao vivo na tela via SSE.', en: 'A job takes the file, renders each PDF page with PDFBox at 300 DPI (or pulls the images out of the ZIP), converts them to WebP and saves them in batches of 100. It runs in a single transaction, so if something fails halfway nothing is left half-done. Progress shows up live on screen over SSE.' } },
+      { title: { pt: 'Notificação em tempo real com RabbitMQ', en: 'Real-time notifications with RabbitMQ' },
+        text: { pt: 'Quando sai capítulo ou episódio novo, o backend publica uma mensagem no RabbitMQ. O consumidor repassa via SSE pra todo mundo que está com o app aberto, sem polling. A notificação também fica salva, e o usuário recebe as últimas 10.', en: 'When a new chapter or episode comes out, the back end publishes a message to RabbitMQ. The consumer forwards it over SSE to everyone with the app open, no polling. The notification is also stored, and users get the latest 10.' } },
+      { title: { pt: 'Histórico de leitura como linha do tempo', en: 'Reading history as a timeline' },
+        text: { pt: 'Toda vez que você abre um capítulo, isso vira um registro com o tempo que passou lendo. Dá pra filtrar por dia ou por intervalo, e reescrevi a query pra não cair em N+1.', en: 'Every time you open a chapter it becomes a record with how long you spent reading. You can filter by day or date range, and I rewrote the query to avoid N+1.' } },
+      { title: { pt: 'Um leitor que dá gosto de usar', en: 'A reader that’s nice to use' },
+        text: { pt: 'Página dupla, direção de leitura (estilo japonês ou ocidental), tela cheia, atalhos de teclado e “continuar de onde parou”. Quando você termina um capítulo, o progresso da sua lista atualiza sozinho.', en: 'Double-page spreads, reading direction (Japanese or Western), fullscreen, keyboard shortcuts and “pick up where you left off”. When you finish a chapter, your list progress updates on its own.' } },
+    ] },
   { id: 'finance', cover: 'finance', url: 'financehub.app/painel', name: { pt: 'FinanceHub', en: 'FinanceHub' }, live: true,
     status: { pt: 'Em produção', en: 'In production' },
-    desc: { pt: 'Controle das minhas finanças pessoais. Já está rodando em produção.', en: 'Keeps track of my personal finances. It’s already running in production.' },
-    stack: ['java', 'spring', 'thymeleaf', 'postgres', 'flyway', 'docker'] },
+    desc: { pt: 'Controle das minhas finanças pessoais, com contas compartilhadas. Já está rodando em produção.', en: 'Keeps track of my personal finances, with shared accounts. It’s already running in production.' },
+    stack: ['java', 'spring', 'thymeleaf', 'postgres', 'flyway', 'docker'],
+    context: {
+      pt: 'Eu precisava separar as contas de casa das minhas e dividir algumas com outra pessoa. Planilha não dava conta disso, então fiz o meu. Está em produção e eu uso todo mês.',
+      en: 'I needed to keep household bills apart from my own and split some of them with someone else. A spreadsheet couldn’t handle that, so I built my own. It’s in production and I use it every month.',
+    },
+    facts: [
+      { pt: 'Em produção', en: 'In production' },
+      { pt: 'Java 25', en: 'Java 25' },
+      { pt: 'SSR com Thymeleaf', en: 'SSR with Thymeleaf' },
+      { pt: 'Deploy automático', en: 'Automated deploy' },
+    ],
+    flows: [
+      { title: { pt: 'Requisição', en: 'Request' }, nodes: [
+        { name: { pt: 'Navegador', en: 'Browser' } },
+        { name: 'Spring Security', note: { pt: 'permissão por subdomínio', en: 'per-subdomain permissions' }, key: true },
+        { name: 'Spring MVC', note: { pt: 'renderiza Thymeleaf', en: 'renders Thymeleaf' } },
+        { name: 'PostgreSQL', note: { pt: 'migrations com Flyway', en: 'Flyway migrations' } },
+      ] },
+      { title: { pt: 'Deploy', en: 'Deploy' }, nodes: [
+        { name: { pt: 'Push na main', en: 'Push to main' } },
+        { name: 'GitHub Actions', note: { pt: 'build com Java 25', en: 'Java 25 build' }, key: true },
+        { name: 'VPS', note: { pt: 'troca o JAR via SSH', en: 'swaps the JAR over SSH' } },
+        { name: 'systemd', note: { pt: 'confere se subiu', en: 'checks it came up' } },
+      ] },
+    ],
+    highlights: [
+      { title: { pt: 'Subdomínios compartilhados', en: 'Shared subdomains' },
+        text: { pt: 'Cada contexto (casa, pessoal…) é um subdomínio. Dá pra convidar outra pessoa, que entra com uma permissão definida, e as queries já filtram pra ninguém acessar despesa que não pode ver.', en: 'Each context (home, personal…) is a subdomain. You can invite someone, who joins with a set permission, and the queries filter things so nobody reaches an expense they shouldn’t see.' } },
+      { title: { pt: 'Agregar um subdomínio no outro', en: 'Nesting one subdomain in another' },
+        text: { pt: 'Dá pra vincular um subdomínio dentro de outro, e os saldos do dashboard consolidam tudo. Tem validação pra impedir associação circular.', en: 'You can link one subdomain inside another and the dashboard balances roll everything up. There’s a check that blocks circular links.' } },
+      { title: { pt: 'Carteira por mês e despesa recorrente', en: 'Monthly wallets and recurring expenses' },
+        text: { pt: 'Cada mês tem a sua carteira, que dá pra reaproveitar no mês seguinte. Despesa fixa é configurada uma vez e se repete, e dá pra marcar tudo como pago de uma vez.', en: 'Each month has its own wallet, which you can carry over to the next one. Fixed expenses are set up once and repeat, and you can mark everything as paid in one go.' } },
+      { title: { pt: 'Deploy automático na VPS', en: 'Automated deploy to a VPS' },
+        text: { pt: 'Push na main e o GitHub Actions builda o JAR, manda pra VPS por SSH, troca pelo novo mantendo o anterior de backup e confere se o service do systemd subiu. Se não subiu, o pipeline falha.', en: 'Push to main and GitHub Actions builds the JAR, ships it to the VPS over SSH, swaps it in while keeping the old one as a backup, and checks the systemd service came up. If it didn’t, the pipeline fails.' } },
+    ] },
   { id: 'work', cover: 'work', url: 'workhub.app/semana', name: { pt: 'Workhub', en: 'Workhub' },
     status: { pt: 'Em evolução', en: 'In progress' },
-    desc: { pt: 'Uso no dia a dia pra anotar coisas e organizar tarefas. A parte de planejamento ainda está em construção.', en: 'I use it every day to take notes and organize tasks. The planning part is still being built.' },
-    stack: ['java', 'spring', 'vue', 'ts', 'primevue', 'postgres', 'redis', 'flyway', 'docker'] },
+    desc: { pt: 'Uso no dia a dia pra organizar demandas, sprints, daily e anotações. A parte de projetos ainda está em construção.', en: 'I use it every day to organize tasks, sprints, dailies and notes. The projects part is still being built.' },
+    stack: ['java', 'spring', 'vue', 'ts', 'primevue', 'postgres', 'redis', 'flyway', 'docker'],
+    context: {
+      pt: 'Fiz pra organizar meu dia a dia de dev: demandas, sprints, daily, feedback e anotações num lugar só. Agora estou ligando ele a um microserviço que sobe e derruba os projetos da minha máquina.',
+      en: 'I built it to organize my day-to-day as a dev: tasks, sprints, dailies, feedback and notes in one place. Now I’m hooking it up to a microservice that starts and stops the projects on my machine.',
+    },
+    facts: [
+      { pt: '2 serviços Spring', en: '2 Spring services' },
+      { pt: 'AOP', en: 'AOP' },
+      { pt: 'Redis', en: 'Redis' },
+      { pt: 'Supabase Storage', en: 'Supabase Storage' },
+    ],
+    flows: [
+      { title: { pt: 'Dia a dia', en: 'Day to day' }, nodes: [
+        { name: 'Vue + PrimeVue' },
+        { name: 'API Workhub', note: { pt: '@PlanResource (AOP)', en: '@PlanResource (AOP)' }, key: true },
+        { name: 'PostgreSQL', note: { pt: 'demandas, sprints, notas', en: 'tasks, sprints, notes' } },
+        { name: 'Supabase', note: { pt: 'arquivos da biblioteca', en: 'library files' } },
+      ] },
+      { title: { pt: 'Projetos', en: 'Projects' }, nodes: [
+        { name: 'API Workhub' },
+        { name: 'Plataforma', note: { pt: 'microserviço', en: 'microservice' }, key: true },
+        { name: 'Redis', note: { pt: 'PID dos processos', en: 'process PIDs' } },
+        { name: { pt: 'Processo + log', en: 'Process + log' }, note: { pt: 'start/stop do projeto', en: 'project start/stop' } },
+      ] },
+    ],
+    highlights: [
+      { title: { pt: 'Recursos por plano numa anotação', en: 'Plan-based features in one annotation' },
+        text: { pt: 'Criei a anotação @PlanResource com um aspecto (AOP) que confere, antes do método rodar, se o usuário tem aquele recurso no plano. Liberar ou bloquear uma feature virou uma linha no controller.', en: 'I made a @PlanResource annotation backed by an aspect (AOP) that checks, before the method runs, whether the user’s plan includes that feature. Turning a feature on or off is now one line in the controller.' } },
+      { title: { pt: 'Plataforma: sobe e derruba projetos', en: 'Plataforma: starts and stops projects' },
+        text: { pt: 'Um microserviço separado roda o script de startup de cada projeto num grupo de processos próprio, guarda o PID no Redis e grava o log em arquivo. Se a plataforma reiniciar, ela retoma o monitoramento e usa o horário de início pra não confundir com um PID que o sistema reaproveitou.', en: 'A separate microservice runs each project’s startup script in its own process group, stores the PID in Redis and writes the log to a file. If the service restarts, it picks the monitoring back up and uses the start time so it doesn’t mistake a PID the OS reused.' } },
+      { title: { pt: 'Biblioteca de arquivos', en: 'File library' },
+        text: { pt: 'Upload pro Supabase Storage com os metadados separados no Postgres e limite de 50 MB por usuário. Dá pra renomear e baixar os arquivos depois.', en: 'Uploads go to Supabase Storage with metadata kept separately in Postgres and a 50 MB limit per user. Files can be renamed and downloaded later.' } },
+      { title: { pt: 'Notas e sprints', en: 'Notes and sprints' },
+        text: { pt: 'Editor de notas com Tiptap (cola markdown, tem controle de tabela e exporta em .md) e board de demandas com sprints, prioridade e filtros. Ele lembra o último subdomínio e a última sprint que você usou.', en: 'A Tiptap note editor (paste markdown, table controls, export to .md) and a task board with sprints, priorities and filters. It remembers the last subdomain and sprint you used.' } },
+    ] },
 ];
 
 

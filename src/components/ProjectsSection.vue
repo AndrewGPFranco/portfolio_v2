@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
 import { projects } from '@/data/portfolio'
 import { icons } from '@/data/icons'
 import { covers } from '@/data/covers'
@@ -9,35 +8,40 @@ import { useUi } from '@/composables/useUi'
 
 const { t, L } = useI18n()
 const { openPreview } = useUi()
-const shown = reactive<Record<string, boolean>>({})
 </script>
 
 <template>
 <section id="projetos" class="block">
   <header class="block-head">
     <h2>{{ t('Projetos', 'Projects') }}</h2>
-    <p class="sub">{{ t('Os projetos pessoais em que mais trabalhei. O código é privado, então na prévia eu conto por que fiz, como funciona por dentro e o que vale destacar.', 'The personal projects I’ve worked on the most. The code is private, so the preview covers why I built it, how it works under the hood and what’s worth pointing out.') }}</p>
+    <p class="sub">{{ t('Os projetos pessoais em que mais trabalhei. O código é privado, então nos detalhes eu conto por que fiz, como funciona por dentro e o que vale destacar.', 'The personal projects I’ve worked on the most. The code is private, so the details cover why I built it, how it works under the hood and what’s worth pointing out.') }}</p>
   </header>
   <div class="block-body">
     <div class="projects">
-      <article v-for="pj in projects" :key="pj.id" class="project">
-        <button class="cover" @click="openPreview(pj)" :aria-label="t('Ver detalhes do ', 'Details of ') + L(pj.name)">
-          <span v-html="covers[pj.cover]"></span>
-          <span class="play"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>{{ t('Detalhes', 'Details') }}</span>
-        </button>
-        <div class="in">
-          <h3>{{ L(pj.name) }}<span v-if="pj.status" class="status" :class="{ ok: pj.live }">{{ L(pj.status) }}</span></h3>
-          <p>{{ L(pj.desc) }}</p>
-          <div class="pfoot">
-            <button class="linkbtn" @click="openPreview(pj)">{{ t('Ver detalhes', 'See details') }}</button>
-            <button class="tbtn" :aria-expanded="!!shown[pj.id]" @click="shown[pj.id] = !shown[pj.id]">
-              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>
-              {{ t('Tecnologias', 'Tech') }}
+      <article v-for="(pj, i) in projects" :key="pj.id" class="project">
+        <div class="pj-art" aria-hidden="true" v-html="covers[pj.cover]"></div>
+
+        <div class="pj-body">
+          <div class="pj-top">
+            <span class="pj-n" aria-hidden="true">{{ String(i + 1).padStart(2, '0') }}</span>
+            <span v-if="pj.status" class="status" :class="{ ok: pj.live }">{{ L(pj.status) }}</span>
+          </div>
+          <h3>{{ L(pj.name) }}</h3>
+          <p class="pj-desc">{{ L(pj.desc) }}</p>
+
+          <ul class="pj-hl">
+            <li v-for="(h, k) in pj.highlights.slice(0, 3)" :key="k">{{ L(h.title) }}</li>
+          </ul>
+
+          <div class="pj-foot">
+            <ul class="pj-stack" :aria-label="t('Tecnologias', 'Tech')">
+              <li v-for="s in pj.stack" :key="s" :title="nameOf(s)"><img :src="icons[s]" :alt="nameOf(s)"></li>
+            </ul>
+            <button class="pj-cta" @click="openPreview(pj)" :aria-label="t('Ver detalhes do ', 'See details of ') + L(pj.name)">
+              {{ t('Ver detalhes', 'See details') }}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </button>
           </div>
-          <div class="reveal" :class="{ open: shown[pj.id] }"><div>
-            <div class="mini"><span v-for="s in pj.stack" :key="s"><img :src="icons[s]" alt="">{{ nameOf(s) }}</span></div>
-          </div></div>
         </div>
       </article>
     </div>
